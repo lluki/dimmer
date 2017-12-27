@@ -14,7 +14,7 @@
 static void uart_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
 	//uart_udp_t * p = (uart_udp_t*)param;
-	printf("uart_in_hook %02x: %c\n", value, value);
+	fprintf(stderr, "%c", value);
 	//uart_udp_fifo_write(&p->in, value);
 }
 
@@ -82,7 +82,6 @@ int main(int argc, char *argv[]) {
     printf("Testcase1\n");
     printf("Starting simulation for %d cycles\n", a);
     avr_vcd_start(&vcd_file);
-    if(0) uart_puts(avr, "hallo\n");
     while(a--){
         avr_run(avr);
         if(a % 10000 == 0) printf("%d\n", a);

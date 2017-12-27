@@ -25,13 +25,15 @@ serial_helper_test: serial_helper.c serial_helper.h serial_helper_test.c
 
 
 install: dimmer.hex
+	# on my usbasp, the connector must point towards the MC.. 
+	# Use mains to power the chip
 	avrdude -F -V -c usbasp -p ATMEGA48 -P ${PORT} -b 115200 -U flash:w:dimmer.hex
 
 
 #Simulator stuff 
 
 sim: sim.c dimmer.axf
-	gcc -Wall ${CDEFS} sim.c ../simavr/examples/parts/ac_input.c -I../simavr/simavr/sim/ -I../simavr/examples/parts -L/home/lukas/coden/dimmer/simavr/simavr/obj-x86_64-linux-gnu -lsimavr -lelf -o sim
+	gcc -Wall ${CDEFS} sim.c ../simavr/examples/parts/ac_input.c -I../simavr/simavr/sim/ -I../simavr/examples/parts -L../simavr/simavr/obj-x86_64-linux-gnu -lsimavr -lelf -o sim
 
 run_sim: sim
-	./sim
+	LD_LIBRARY_PATH=../simavr/simavr/obj-x86_64-linux-gnu ./sim

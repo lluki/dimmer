@@ -1,0 +1,5 @@
+*.axf
+*.elf
+*.hex
+sim
+*.vcd

@@ -29,6 +29,21 @@ char uart_getchar() {
  * If the buffer is exhausted and no newline is found, replaces false. The buffer
  * will contain partial data */
 int my_fgets(char * buf, int size){
+
+#ifdef FAKE_SER_INPUT
+    static int first = 1;
+    if(!first) return 0;
+    char * in = "s:1000:100000";
+    while(*in){
+        *buf = *in;
+        buf++;
+        in++;
+    }
+    first = 0;
+    return 1;
+#endif
+
+
     int i = 0;
     while(i < size){
         buf[i] = uart_getchar();
@@ -49,8 +64,14 @@ void my_puts(char *buf){
 }
 
 void my_puti(int i){
-    char buf[10];
+    char buf[32];
     itoa(i, buf, 10);
+    my_puts(buf);
+}
+
+void my_putl(long i){
+    char buf[32];
+    ltoa(i, buf, 10);
     my_puts(buf);
 }
 
@@ -59,7 +80,7 @@ void my_putc(char a){
 }
 
 /* Parses a string in the form of s:0:0. Returns number of matched entries. False (0) on error */
-int parse_serial_line(char * line, char * out_a, int * out_b, int * out_c){
+int parse_serial_line(char * line, char * out_a, int * out_b, long * out_c){
     *out_a = line[0];
     if(line[1] != ':'){
         return 1;

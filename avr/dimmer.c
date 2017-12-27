@@ -24,9 +24,9 @@
 
 
 // At every zero crossing, delta is added to the value until it reaches dest
-static volatile float timer_match_value = 16000;
-static volatile float timer_match_value_dest = 16000;
-static volatile float timer_match_value_delta = 0;
+static volatile double timer_match_value = 16000;
+static volatile double timer_match_value_dest = 16000;
+static volatile double timer_match_value_delta = 0;
 
 ISR(INT0_vect) {
     TCNT1 = 0;           // Reset timer
@@ -42,9 +42,10 @@ ISR(INT0_vect) {
         }
     }
     if(timer_match_value < 16000) {
-        TIMSK1 |= 1 << OCIE1A;               // Enable timer1 cmpa interrupt
+        TIMSK1 |= 1 << OCIE1A;              // Enable timer1 cmpa interrupt
         TIFR1 = 1 << OCF1B | 1 << OCF1A;    // Reset any pending interrupts
         OCR1A = timer_match_value;
+        //my_puts("OCR1A: "); my_puti(OCR1A); my_puts("\n");
     } else {
         TIMSK1 &= ~(1 << OCIE1A);            // Disable timer int.
     }
@@ -62,14 +63,12 @@ ISR(TIMER1_COMPB_vect) {
 }
 
 static void handle_serial_input(){
-    char buf[20];
+    char buf[32];
     char c;
     int val; 
-    int time;
+    long time;
     if(my_fgets(buf, sizeof(buf))){
         PORTC ^= 1;
-        //my_puts(buf);
-        //my_puts("\n");
         int scan_res = parse_serial_line(buf, &c, &val, &time);
         //my_puts("r:");
         //my_puti(scan_res);
@@ -78,7 +77,7 @@ static void handle_serial_input(){
         //my_puts(":");
         //my_puti(val);
         //my_puts(":");
-        //my_puti(time);
+        //my_putl(time);
         //my_puts("\n");
         if(scan_res == 3 && c == 's'){
             //disable interrupts while updating
@@ -97,7 +96,7 @@ static void handle_serial_input(){
             } else {
                 timer_match_value_dest = val;
                 // We get our time in miliseconds, our timer fires every 100th second. hence *10
-                timer_match_value_delta = ((float)(timer_match_value_dest - timer_match_value))*10/((float)time);
+                timer_match_value_delta = ((double)(timer_match_value_dest - timer_match_value))*10/((double)time);
             }
             sei();
         }
