@@ -2,11 +2,14 @@
 
 /*
  MQTT -> SERIAL
-
+ * Install arduino libs:
+ *  pubsubclient
+ *  arduinojson
 */
 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#define ARDUINOJSON_USE_LONG_LONG 1 
 #include <ArduinoJson.h>
 #include <WiFiManager.h>
 #include <time.h>
@@ -52,9 +55,9 @@ void callback_alarm_set(byte* payload, unsigned int length){
     return;
   }
   
-  long alarm_time = root["alarm_time"];
+  unsigned long long alarm_time = root["alarm_time"];
   debug_print("Alarm set, alarm_time: ");
-  debug_println(alarm_time);
+  debug_println((unsigned long)alarm_time);
   dimAlarm.set_alarm(root["alarm_time"], root["val"], root["delay"]);
 }
 
@@ -70,12 +73,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   Serial.begin(9600);
+  debug_println("Hello");
 
   WiFiManager wifiManager;
   wifiManager.setDebugOutput(false);
   wifiManager.setTimeout(600);
+  debug_println("connecting using wifimanager");
   if(!wifiManager.autoConnect("DimmerSetup")){
     //No success
+    debug_println("autoConnect unsuccesful");
     while(1) ESP.deepSleep(30 * 1000000);
   }
   

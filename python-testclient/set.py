@@ -2,7 +2,7 @@
 
 import json, sys, time, argparse
 import paho.mqtt.client as mqtt
-from conf import get_conf
+from conf import get_conf_from_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-w", "--when", help="when?", choices=["now","alarm"],default="now")
@@ -11,7 +11,7 @@ parser.add_argument("-d", "--delay", help="delay until value is reached (ms)", d
 parser.add_argument("-c", "--conf", help="config file", default="/etc/mqtt-relay.conf")
 args = parser.parse_args()
 
-config = get_conf()
+config = get_conf_from_file(args.conf)
 
 
 def on_connect(client, userdata, flags, rc):

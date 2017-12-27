@@ -40,7 +40,10 @@ public class Utils {
         }
     }
 
-    public static long getNextAlarmTime(Context context){
+    /*
+     * Returns UTC wall clock timestamp in MILLISECONDS
+     */
+    public static long getNextAlarmTimeMS(Context context){
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final AlarmManager.AlarmClockInfo info = am.getNextAlarmClock();
         if (info != null) {

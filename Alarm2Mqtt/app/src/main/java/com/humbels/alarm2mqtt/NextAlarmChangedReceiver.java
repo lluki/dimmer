@@ -3,7 +3,6 @@ package com.humbels.alarm2mqtt;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.nfc.Tag;
 import android.util.Log;
 
 import com.humbels.mqtt.PublishMsg;
@@ -26,7 +25,8 @@ public class NextAlarmChangedReceiver extends BroadcastReceiver {
         //String message = "Setting device alarm to: " + Utils.getNextAlarmStr(context);
 
         if(set.getAlarmSync()){
-            String message = String.valueOf(Utils.getNextAlarmTime(context));
+            long nextAlarmTimeS = Utils.getNextAlarmTimeMS(context) / 1000;
+            String message = String.valueOf(nextAlarmTimeS);
             Log.d(TAG, "Send to mqtt(" + set.getAlarmTopic() + "): " + message);
             LogUtil.debug("Send to mqtt(" + set.getAlarmTopic() + "): " + message);
             new MySendMessageAsyncTask(context).execute(new PublishMsg(set.getAlarmTopic(), message.getBytes()));
