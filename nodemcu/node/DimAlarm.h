@@ -2,12 +2,13 @@
 #define DimAlarm_h
 
 #include <stdint.h>
+#include <time.h>
 
 class DimAlarm {
   private:
-    long alarm_time;
-    uint32_t val;
-    uint32_t del;
+    time_t alarm_time = 0;
+    uint32_t val = 0;
+    uint32_t del = 0;
     bool active = false;
   public:
     void set_alarm(long alarm_time, uint32_t val, uint32_t del);

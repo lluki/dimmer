@@ -27,8 +27,8 @@ def on_message(client, userdata, msg):
         print("  relaying to light/alarm/set")
         payload = json.dumps({
             'alarm_time': msg.payload,
-            'val': 100,
-            'delay': 1000})
+            'val': 1000,
+            'delay': 100000})
         print("  payload=%s" % payload)
         client.publish("light/alarm/set", payload=payload)
 

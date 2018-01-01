@@ -1,5 +1,4 @@
 
-
 /*
  MQTT -> SERIAL
  * Install arduino libs:
@@ -24,7 +23,7 @@
 #define debug_println(arg) \
             do { if (DEBUG) Serial.println(arg); } while (0)
 
-// Update these with values suitable for your network.
+#define LIGHT_ADVANCE_S 600
 
 const char* mqtt_set_topic = "light/set";
 const char* mqtt_alarm_topic = "light/alarm/set";
@@ -55,10 +54,16 @@ void callback_alarm_set(byte* payload, unsigned int length){
     return;
   }
   
-  unsigned long long alarm_time = root["alarm_time"];
-  debug_print("Alarm set, alarm_time: ");
-  debug_println((unsigned long)alarm_time);
-  dimAlarm.set_alarm(root["alarm_time"], root["val"], root["delay"]);
+  time_t alarm_time = root["alarm_time"];
+  if(alarm_time != 0) {
+    alarm_time -= LIGHT_ADVANCE_S;
+    debug_print("Alarm set, alarm_time(incl. advance): ");
+    debug_println((unsigned long)alarm_time); //Cast because println has no long long support  
+    dimAlarm.set_alarm(alarm_time, root["val"], root["delay"]);
+  } else {
+    debug_println("Deactivating alarm..");
+    dimAlarm.deactivate_alarm();
+  }
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -85,7 +90,8 @@ void setup() {
     while(1) ESP.deepSleep(30 * 1000000);
   }
   
-  configTime(1 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  //configTime(1 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
   debug_println("\nWaiting for time");
   while (!time(nullptr)) {
     debug_print(".");
@@ -94,7 +100,7 @@ void setup() {
   debug_println("");
   time_t rawtime;
   time(&rawtime);
-  debug_print("The current local time is:");
+  debug_print("The current UTC time is:");
   debug_println(ctime(&rawtime));
   debug_println(rawtime);
 
@@ -132,7 +138,7 @@ void loop() {
   client.loop();
   
   time_t rawtime;
-  time(&rawtime);
+  rawtime = time(nullptr);
   dimAlarm.loop(rawtime);
 
   long now = millis();
