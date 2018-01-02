@@ -23,10 +23,9 @@
 #define debug_println(arg) \
             do { if (DEBUG) Serial.println(arg); } while (0)
 
-#define LIGHT_ADVANCE_S 600
-
-const char* mqtt_set_topic = "light/set";
-const char* mqtt_alarm_topic = "light/alarm/set";
+#define DEVICE_PREFIX "light"
+const char* mqtt_set_topic = DEVICE_PREFIX "/set";
+const char* mqtt_alarm_topic = DEVICE_PREFIX "/alarm/set";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -56,8 +55,7 @@ void callback_alarm_set(byte* payload, unsigned int length){
   
   time_t alarm_time = root["alarm_time"];
   if(alarm_time != 0) {
-    alarm_time -= LIGHT_ADVANCE_S;
-    debug_print("Alarm set, alarm_time(incl. advance): ");
+    debug_print("Alarm set, alarm_time: ");
     debug_println((unsigned long)alarm_time); //Cast because println has no long long support  
     dimAlarm.set_alarm(alarm_time, root["val"], root["delay"]);
   } else {
@@ -90,7 +88,6 @@ void setup() {
     while(1) ESP.deepSleep(30 * 1000000);
   }
   
-  //configTime(1 * 3600, 0, "pool.ntp.org", "time.nist.gov");
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
   debug_println("\nWaiting for time");
   while (!time(nullptr)) {
@@ -143,7 +140,7 @@ void loop() {
 
   long now = millis();
   if(!digitalRead(0) && next_pb < now){
-    client.publish("announce", "esp8266 dimmer button push");
+    client.publish(DEVICE_PREFIX "/button", "pushed");
     debug_print("Time: ");
     debug_println(rawtime);
     next_pb = now + 200;
