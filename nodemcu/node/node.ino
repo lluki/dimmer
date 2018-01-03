@@ -75,6 +75,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(D1, INPUT_PULLUP);        // External button connected to D1 (and GND)
   Serial.begin(9600);
   debug_println("Hello");
 
@@ -127,7 +128,7 @@ void reconnect() {
   }
 }
 
-static long next_pb = 0;
+
 void loop() {
   if (!client.connected()) {
     reconnect();
@@ -139,10 +140,18 @@ void loop() {
   dimAlarm.loop(rawtime);
 
   long now = millis();
-  if(!digitalRead(0) && next_pb < now){
-    client.publish(DEVICE_PREFIX "/button", "pushed");
-    debug_print("Time: ");
-    debug_println(rawtime);
-    next_pb = now + 200;
+
+  // NodeMCU built in button
+  static long next_pb0 = 0;
+  if(!digitalRead(0) && next_pb0 < now){
+    client.publish(DEVICE_PREFIX "/button0", "pushed");
+    next_pb0 = now + 200;
+  }
+  
+  // External button on 
+  static long next_pb1 = 0;
+  if(!digitalRead(D1) && next_pb1 < now){
+    client.publish(DEVICE_PREFIX "/button1", "pushed");
+    next_pb1 = now + 200;
   }
 }
