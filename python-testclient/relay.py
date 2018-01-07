@@ -53,6 +53,16 @@ class Handler(object):
 class DimmerHandler(Handler):
     def __init__(self, deviceid):
         super(DimmerHandler, self).__init__(deviceid)
+        self.current_val = 0 
+
+    def on_message(self, msg):
+        if msg.topic.endswith(self.deviceid + "/set"):
+            self.current_val = json.loads(msg.payload)["val"]
+        if msg.topic.endswith("/button1"):
+            payload = json.dumps({
+                'val': 1000 if self.current_val == 0 else 0,
+                'delay': 1000})
+            client.publish(self.deviceid + "/set", payload=payload, retain=True)
 
 
 class PhoneHandler(Handler):
@@ -67,7 +77,7 @@ class PhoneHandler(Handler):
         payload = json.dumps({
             'val': 0,
             'delay': 1000})
-        client.publish("light/set", payload=payload)
+        client.publish("light/set", payload=payload, retain=True)
 
     def clear_alarm(self):
         logger.debug("Clearing alarm...")
@@ -76,7 +86,7 @@ class PhoneHandler(Handler):
             'alarm_time': 0,
             'val': 1000,
             'delay': 100000})
-        client.publish("light/alarm/set", payload=payload)
+        client.publish("light/alarm/set", payload=payload, retain=True)
 
         logger.debug("Will turn off light in %d secs...", LIGHT_OFF_TIMEOUT_S)
         now = time.time()
@@ -104,7 +114,7 @@ class PhoneHandler(Handler):
                 'alarm_time': alarm_time - LIGHT_ADVANCE_S,
                 'val': 1000,
                 'delay': 100000})
-            client.publish("light/alarm/set", payload=payload)
+            client.publish("light/alarm/set", payload=payload, retain=True)
 
     def on_message(self, msg):
         if msg.topic.endswith("alarm"):
@@ -135,6 +145,8 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("#")
 
 def on_message(client, userdata, msg):
+    if msg.topic[0] != '/':
+        msg.topic = '/' + msg.topic
     logger.debug(msg.topic+": "+str(msg.payload))
     for handler in handlers:
         if msg.topic.startswith(handler.prefix):
