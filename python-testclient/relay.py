@@ -15,7 +15,7 @@ from conf import get_conf
 SNOOZE_DURATION_S = 5*60   # (Max) time between two snoozed alarms
 LIGHT_ADVANCE_S = 10*60    # How much in advance will the light start
 ALARM_CLEAR_TIMEOUT_S = 60 # How long does it take to press the snooze button
-LIGHT_OFF_TIMEOUT_S = 15*60   # Time to wait until light is turned of after alarm is over
+LIGHT_OFF_TIMEOUT_S = 30*60   # Time to wait until light is turned of after alarm is over
 
 class On(object):
     def __init__(self, ts, fun):
@@ -59,8 +59,14 @@ class DimmerHandler(Handler):
         if msg.topic.endswith(self.deviceid + "/set"):
             self.current_val = json.loads(msg.payload)["val"]
         if msg.topic.endswith("/button1"):
+            if self.current_val <= 333:
+                next_val = 500
+            elif self.current_val <= 666:
+                next_val = 1000
+            else:
+                next_val = 0
             payload = json.dumps({
-                'val': 1000 if self.current_val == 0 else 0,
+                'val': next_val,
                 'delay': 1000})
             client.publish(self.deviceid + "/set", payload=payload, retain=True)
 
